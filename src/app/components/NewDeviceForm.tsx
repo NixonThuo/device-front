@@ -1,48 +1,57 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 interface NewDeviceFormProps {
   onSuccess: () => void;
 }
 
 export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
-  const [deviceName, setDeviceName] = useState('');
-  const [deviceType, setDeviceType] = useState('Phone');
-  const [serialNumber, setSerialNumber] = useState('');
+  const [deviceName, setDeviceName] = useState("");
+  const [deviceType, setDeviceType] = useState("Phone");
+  const [serialNumber, setSerialNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const deviceTypes = [
-    { value: 'Phone', label: 'Phone', icon: '📱' },
-    { value: 'Tablet', label: 'Tablet', icon: '📱' },
-    { value: 'Laptop', label: 'Laptop', icon: '💻' },
-    { value: 'Desktop', label: 'Desktop', icon: '🖥️' },
-    { value: 'Other', label: 'Other', icon: '📟' },
+    { value: "Phone", label: "Phone", icon: "📱" },
+    { value: "Tablet", label: "Tablet", icon: "📱" },
+    { value: "Laptop", label: "Laptop", icon: "💻" },
+    { value: "Desktop", label: "Desktop", icon: "🖥️" },
+    { value: "Other", label: "Other", icon: "📟" },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/devices', {
-        deviceName,
-        deviceType,
-        serialNumber,
-      }, {
-        headers: {
-          Authorization: `JWT ${token}`,
+      const token = localStorage.getItem("token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
+  const userIdStr = localStorage.getItem("userId");
+  const userId = userIdStr ? parseInt(userIdStr, 10) : undefined;
+      await axios.post(
+        `${apiUrl}/api/devices`,
+        {
+          deviceName,
+          deviceType,
+          serialNumber,
+          owner: userId,
         },
-      });
-      
+        {
+          headers: {
+            Authorization: `JWT ${token}`,
+          },
+        }
+      );
+
       onSuccess();
     } catch (err) {
       console.error(err);
-      setError('Failed to register device. Please try again.');
+      setError("Failed to register device. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -51,8 +60,12 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Register New Device</h2>
-        <p className="text-gray-600">Add a new device to your account for tracking and management.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Register New Device
+        </h2>
+        <p className="text-gray-600">
+          Add a new device to your account for tracking and management.
+        </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
@@ -64,7 +77,10 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
           )}
 
           <div>
-            <label htmlFor="deviceName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="deviceName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Device Name *
             </label>
             <input
@@ -76,11 +92,16 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-500"
               placeholder="e.g., John's iPhone 15"
             />
-            <p className="mt-1 text-sm text-gray-500">Choose a name that helps you identify this device</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Choose a name that helps you identify this device
+            </p>
           </div>
 
           <div>
-            <label htmlFor="deviceType" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="deviceType"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Device Type *
             </label>
             <select
@@ -98,7 +119,10 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
           </div>
 
           <div>
-            <label htmlFor="serialNumber" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="serialNumber"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Serial Number
             </label>
             <input
@@ -109,7 +133,9 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-500"
               placeholder="e.g., ABC123456789"
             />
-            <p className="mt-1 text-sm text-gray-500">Optional: Enter the device's serial number for better tracking</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Optional: Enter the device serial number for better tracking
+            </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-6">
@@ -131,7 +157,7 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
                   Registering...
                 </div>
               ) : (
-                'Register Device'
+                "Register Device"
               )}
             </button>
           </div>

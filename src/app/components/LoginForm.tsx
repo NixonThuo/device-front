@@ -1,34 +1,55 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 interface LoginFormProps {
   onLogin: () => void;
 }
 
 export default function LoginForm({ onLogin }: LoginFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const res = await axios.post('http://localhost:3000/api/users/login', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const res = await axios.post(`${apiUrl}/api/users/login`, {
         email,
         password,
       });
 
-      localStorage.setItem('token', res.data.token);
-      onLogin();
-    } catch (err) {
+        console.log("Login response:", res.data);
+        localStorage.setItem("token", res.data.token);
+        if (res.data.user && res.data.user.id) {
+          localStorage.setItem("userId", res.data.user.id.toString());
+        }
+        onLogin();
+    } catch (err: unknown) {
       console.error(err);
-      setError('Invalid email or password. Please try again.');
+      if (axios.isAxiosError(err)) {
+        if (!err.response) {
+          // Network or CORS error
+          setError(
+            "Network error: Unable to reach the server. Please check your connection, backend status, or CORS settings."
+          );
+        } else if (err.response.status === 401) {
+          setError("Invalid email or password. Please try again.");
+        } else {
+          setError(
+            err.response.data?.message ||
+              `Login failed: ${err.response.statusText}`
+          );
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -42,9 +63,12 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
             {error}
           </div>
         )}
-        
+
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Email Address
           </label>
           <input
@@ -59,7 +83,10 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Password
           </label>
           <input
@@ -84,7 +111,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
               Signing in...
             </div>
           ) : (
-            'Sign In'
+            "Sign In"
           )}
         </button>
       </form>

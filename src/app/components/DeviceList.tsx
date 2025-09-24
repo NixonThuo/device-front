@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 type Device = {
@@ -19,6 +20,7 @@ export default function DeviceList({ onAddDevice }: DeviceListProps) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     fetchDevices();
@@ -27,7 +29,8 @@ export default function DeviceList({ onAddDevice }: DeviceListProps) {
   const fetchDevices = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/devices', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await axios.get(`${apiUrl}/api/devices`, {
         headers: {
           Authorization: `JWT ${token}`,
         },
@@ -132,13 +135,18 @@ export default function DeviceList({ onAddDevice }: DeviceListProps) {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-lg font-medium text-gray-900 truncate">
-                      {device.deviceName}
+                      <button
+                        className="text-indigo-600 hover:underline focus:outline-none p-0 bg-transparent"
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0 }}
+                        onClick={() => router.push(`/devices/${device.id}/create-pass`)}
+                      >
+                        {device.deviceName}
+                      </button>
                     </h3>
                     <p className="text-sm text-gray-500 capitalize">{device.deviceType}</p>
                   </div>
                 </div>
               </div>
-              
               {device.serialNumber && (
                 <div className="mb-4">
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -149,7 +157,6 @@ export default function DeviceList({ onAddDevice }: DeviceListProps) {
                   </p>
                 </div>
               )}
-              
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   Active
