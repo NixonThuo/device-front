@@ -35,7 +35,7 @@ export default function CreatePassPage({
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
       await axios.post(
         `${apiUrl}/api/passes`,
         {
@@ -61,7 +61,14 @@ export default function CreatePassPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header
+        onLogout={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("userRole");
+          window.location.href = "/";
+        }}
+      />
       <div className="max-w-5xl mx-auto py-10">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">

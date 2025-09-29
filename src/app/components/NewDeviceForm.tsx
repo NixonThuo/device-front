@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface NewDeviceFormProps {
@@ -13,6 +13,8 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
   const [serialNumber, setSerialNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [users, setUsers] = useState<{ id: number; email: string }[]>([]);
+  const [owner, setOwner] = useState<number | undefined>(undefined);
 
   const deviceTypes = [
     { value: "Phone", label: "Phone", icon: "📱" },
@@ -21,6 +23,26 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
     { value: "Desktop", label: "Desktop", icon: "🖥️" },
     { value: "Other", label: "Other", icon: "📟" },
   ];
+
+  useEffect(() => {
+    // Only fetch users if admin
+    const role = typeof window !== "undefined" ? localStorage.getItem("userRole") : null;
+    if (role === "admin") {
+      const fetchUsers = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+          const res = await axios.get(`${apiUrl}/api/users`, {
+            headers: { Authorization: `JWT ${token}` },
+          });
+          setUsers(res.data.docs || res.data || []);
+        } catch (err) {
+          // ignore
+        }
+      };
+      fetchUsers();
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,15 +53,19 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
       const token = localStorage.getItem("token");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-  const userIdStr = localStorage.getItem("userId");
-  const userId = userIdStr ? parseInt(userIdStr, 10) : undefined;
+      let ownerId = owner;
+      if (!ownerId) {
+        // fallback to self if not admin or not selected
+        const userIdStr = localStorage.getItem("userId");
+        ownerId = userIdStr ? parseInt(userIdStr, 10) : undefined;
+      }
       await axios.post(
         `${apiUrl}/api/devices`,
         {
           deviceName,
           deviceType,
           serialNumber,
-          owner: userId,
+          owner: ownerId,
         },
         {
           headers: {
@@ -63,6 +89,21 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Register New Device
         </h2>
+        {users.length > 0 && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Owner</label>
+            <select
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-900"
+              value={owner ?? ""}
+              onChange={e => setOwner(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+            >
+              <option value="">Select owner...</option>
+              {users.map(u => (
+                <option key={u.id} value={u.id}>{u.email}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <p className="text-gray-600">
           Add a new device to your account for tracking and management.
         </p>

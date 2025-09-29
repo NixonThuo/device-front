@@ -27,8 +27,13 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
 
         console.log("Login response:", res.data);
         localStorage.setItem("token", res.data.token);
-        if (res.data.user && res.data.user.id) {
-          localStorage.setItem("userId", res.data.user.id.toString());
+        if (res.data.user) {
+          if (res.data.user.id) {
+            localStorage.setItem("userId", res.data.user.id.toString());
+          }
+          if (res.data.user.role) {
+            localStorage.setItem("userRole", res.data.user.role);
+          }
         }
         onLogin();
     } catch (err: unknown) {
