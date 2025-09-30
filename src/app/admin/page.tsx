@@ -23,6 +23,8 @@ export default function AdminDevicesPage() {
   const [isClient, setIsClient] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const router = useRouter();
 
   useEffect(() => {
@@ -106,39 +108,95 @@ export default function AdminDevicesPage() {
         ) : error ? (
           <div className="text-red-600">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {devices.map((device) => (
-              <div
-                key={device.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => router.push(`/devices/${device.id}/create-pass`)}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Device Name
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Type
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Status
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Owner
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Serial
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">
+                      Created
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {devices
+                    .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                    .map((device) => (
+                      <tr
+                        key={device.id}
+                        className="hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() =>
+                          router.push(`/devices/${device.id}/create-pass`)
+                        }
+                      >
+                        <td className="px-4 py-2 text-indigo-700 font-medium">
+                          {device.deviceName}
+                        </td>
+                        <td className="px-4 py-2 capitalize">
+                          {device.deviceType}
+                        </td>
+                        <td className="px-4 py-2">{device.status}</td>
+                        <td className="px-4 py-2">
+                          {typeof device.owner === "object" &&
+                          device.owner !== null
+                            ? device.owner.email
+                            : device.owner}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-500">
+                          {device.serialNumber || "-"}
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-400">
+                          {device.createdAt
+                            ? new Date(device.createdAt).toLocaleString()
+                            : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination Controls */}
+            <div className="flex justify-between items-center mt-4">
+              <button
+                className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
               >
-                <div className="text-lg font-semibold text-indigo-700">
-                  {device.deviceName}
-                </div>
-                <div className="text-gray-600 capitalize">
-                  Type: {device.deviceType}
-                </div>
-                <div className="text-gray-600">Status: {device.status}</div>
-                <div className="text-gray-600">
-                  Owner:{" "}
-                  {typeof device.owner === "object" && device.owner !== null
-                    ? device.owner.email
-                    : device.owner}
-                </div>
-                {device.serialNumber && (
-                  <div className="text-gray-500 text-xs mt-2">
-                    Serial: {device.serialNumber}
-                  </div>
-                )}
-                <div className="text-gray-400 text-xs mt-2">
-                  Created:{" "}
-                  {device.createdAt
-                    ? new Date(device.createdAt).toLocaleString()
-                    : "-"}
-                </div>
-              </div>
-            ))}
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {Math.ceil(devices.length / pageSize)}
+              </span>
+              <button
+                className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+                onClick={() =>
+                  setCurrentPage((p) =>
+                    Math.min(Math.ceil(devices.length / pageSize), p + 1)
+                  )
+                }
+                disabled={
+                  currentPage === Math.ceil(devices.length / pageSize) ||
+                  devices.length === 0
+                }
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>

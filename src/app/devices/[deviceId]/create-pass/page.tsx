@@ -48,16 +48,17 @@ export default function CreatePassPage({
       );
       setShowModal(false);
       window.location.href = `http://localhost:3001/devices/${deviceIdInt}/create-pass`;
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Failed to create pass.");
-      } else {
-        setError("Failed to create pass.");
-      }
+    } catch {
+      setError(
+        "Failed to create pass. Please check for overlapping passes or contact your admin."
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Helper to get today's date in yyyy-mm-dd format
+  const todayStr = new Date().toISOString().split("T")[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -143,6 +144,7 @@ export default function CreatePassPage({
                     type="date"
                     required
                     value={startDate}
+                    min={todayStr}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-gray-900"
                   />
