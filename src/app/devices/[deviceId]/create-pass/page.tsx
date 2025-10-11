@@ -47,7 +47,7 @@ export default function CreatePassPage({
         { headers: { Authorization: `JWT ${token}` } }
       );
       setShowModal(false);
-      window.location.href = `http://localhost:3001/devices/${deviceIdInt}/create-pass`;
+      window.location.href = `/devices/${deviceIdInt}/create-pass`;
     } catch {
       setError(
         "Failed to create pass. Please check for overlapping passes or contact your admin."
