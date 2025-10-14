@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import PassList from "./PassList";
 import Header from "../../../components/Header";
@@ -9,9 +9,9 @@ import { fetchDevice, DeviceDetails } from "../../../components/fetchDevice";
 export default function CreatePassPage({
   params,
 }: {
-  params: Promise<{ deviceId: string }>;
+  params: { deviceId: string };
 }) {
-  const { deviceId } = use(params);
+  const { deviceId } = params;
   const deviceIdInt = parseInt(deviceId, 10);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");

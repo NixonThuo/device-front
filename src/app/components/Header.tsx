@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
 
 interface HeaderProps {
   onLogout?: () => void;
+}
+
+// Axios global 401 handler
+if (typeof window !== "undefined") {
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        window.location.href = "/login";
+      }
+      return Promise.reject(error);
+    }
+  );
 }
 
 export default function Header({ onLogout }: HeaderProps) {
