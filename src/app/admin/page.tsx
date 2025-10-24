@@ -25,6 +25,8 @@ export default function AdminDevicesPage() {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+  const [expiring, setExpiring] = useState(false);
+  const [expireMsg, setExpireMsg] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -70,12 +72,64 @@ export default function AdminDevicesPage() {
         }}
       />
       <div className="max-w-5xl mx-auto py-10">
-        <button
-          onClick={() => setShowModal(true)}
-          className="mb-8 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          + Add Device
-        </button>
+        <div className="mb-8 flex items-center gap-3">
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            + Add Device
+          </button>
+          <button
+            onClick={async () => {
+              const ok = confirm(
+                "Run expire check and mark overlapping/expired passes as expired?"
+              );
+              if (!ok) return;
+              const secret = window.prompt("Enter admin secret header (x-admin-secret):");
+              if (!secret) {
+                alert("Admin secret is required to run this action.");
+                return;
+              }
+              try {
+                setExpiring(true);
+                setExpireMsg("");
+                const token = localStorage.getItem("token");
+                const apiUrl =
+                  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+                const res = await axios.post(
+                  `${apiUrl}/api/passes/expire-admin`,
+                  {},
+                  {
+                    headers: {
+                      "x-admin-secret": secret,
+                      Authorization: `JWT ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                  }
+                );
+                setExpireMsg(res.data?.message || "Expire job completed.");
+                // reload to refresh device list / passes
+                window.location.reload();
+              } catch (e) {
+                console.error("Expire passes error:", e);
+                setExpireMsg(
+                  axios.isAxiosError(e) && e.response?.data
+                    ? (e.response.data.message || JSON.stringify(e.response.data))
+                    : "Failed to run expire job."
+                );
+              } finally {
+                setExpiring(false);
+              }
+            }}
+            disabled={expiring}
+            className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors disabled:opacity-50"
+          >
+            {expiring ? "Running..." : "Expire Passes"}
+          </button>
+        </div>
+        {expireMsg && (
+          <div className="mb-6 text-sm text-gray-700">{expireMsg}</div>
+        )}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-2xl relative">
