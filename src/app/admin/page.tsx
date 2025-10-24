@@ -85,15 +85,15 @@ export default function AdminDevicesPage() {
                 "Run expire check and mark overlapping/expired passes as expired?"
               );
               if (!ok) return;
-              const secret = window.prompt("Enter admin secret header (x-admin-secret):");
-              if (!secret) {
-                alert("Admin secret is required to run this action.");
-                return;
-              }
               try {
                 setExpiring(true);
                 setExpireMsg("");
                 const token = localStorage.getItem("token");
+                if (!token) {
+                  setExpireMsg("Not authenticated. Please login as an admin.");
+                  setExpiring(false);
+                  return;
+                }
                 const apiUrl =
                   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
                 const res = await axios.post(
@@ -101,7 +101,6 @@ export default function AdminDevicesPage() {
                   {},
                   {
                     headers: {
-                      "x-admin-secret": secret,
                       Authorization: `JWT ${token}`,
                       "Content-Type": "application/json",
                     },

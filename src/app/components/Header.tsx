@@ -12,8 +12,21 @@ if (typeof window !== "undefined") {
   axios.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response && error.response.status === 401) {
-        window.location.href = "/login";
+      if (error.response) {
+        if (error.response.status === 401) {
+          // Clear any stored auth and redirect to home on unauthorized
+          try {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            localStorage.removeItem("userRole");
+          } catch {
+            // ignore
+          }
+          window.location.href = "/";
+        } else if (error.response.status === 403) {
+          // Forbidden: redirect to home
+          window.location.href = "/";
+        }
       }
       return Promise.reject(error);
     }
