@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../../../utils/apiClient";
 import { fetchDevice, DeviceDetails } from "../../../components/fetchDevice";
 
 interface Pass {
@@ -22,11 +22,7 @@ export default function PassList({ deviceId }: { deviceId: string }) {
   useEffect(() => {
     const fetchPasses = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-        const res = await axios.get(`${apiUrl}/api/passes/by-device`, {
-          headers: { Authorization: `JWT ${token}` },
+        const res = await apiClient.get(`/api/passes/by-device`, {
           params: { device: deviceId },
         });
         setPasses(Array.isArray(res.data) ? res.data : []);

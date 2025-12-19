@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 export interface DeviceDetails {
   id: string;
@@ -10,10 +10,7 @@ export interface DeviceDetails {
 
 export async function fetchDevice(deviceId: string, token: string): Promise<DeviceDetails | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const res = await axios.get(`${apiUrl}/api/devices/${deviceId}`,
-      { headers: { Authorization: `JWT ${token}` } }
-    );
+    const res = await apiClient.get(`/api/devices/${deviceId}`);
     // Normalize owner to string if it's an object
     const data = res.data;
     if (data && typeof data.owner === 'object' && data.owner !== null && 'email' in data.owner) {

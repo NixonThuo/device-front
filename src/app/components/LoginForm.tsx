@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 interface LoginFormProps {
   onLogin: () => void;
@@ -19,8 +19,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
     setError("");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const res = await axios.post(`${apiUrl}/api/users/login`, {
+      const res = await apiClient.post(`/api/users/login`, {
         email,
         password,
       });
@@ -36,24 +35,20 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           }
         }
         onLogin();
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
-      if (axios.isAxiosError(err)) {
-        if (!err.response) {
-          // Network or CORS error
-          setError(
-            "Network error: Unable to reach the server. Please check your connection, backend status, or CORS settings."
-          );
-        } else if (err.response.status === 401) {
-          setError("Invalid email or password. Please try again.");
-        } else {
-          setError(
-            err.response.data?.message ||
-              `Login failed: ${err.response.statusText}`
-          );
-        }
+      if (!err.response) {
+        // Network or CORS error
+        setError(
+          "Network error: Unable to reach the server. Please check your connection, backend status, or CORS settings."
+        );
+      } else if (err.response.status === 401) {
+        setError("Invalid email or password. Please try again.");
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(
+          err.response.data?.message ||
+            `Login failed: ${err.response.statusText}`
+        );
       }
     } finally {
       setIsLoading(false);

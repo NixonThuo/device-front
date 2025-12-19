@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 interface User {
   id: number;
@@ -24,11 +24,7 @@ export default function AdminNewDeviceForm({ onSuccess }: DeviceFormProps) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-        const res = await axios.get(`${apiUrl}/api/users`, {
-          headers: { Authorization: `JWT ${token}` },
-        });
+        const res = await apiClient.get(`/api/users`);
         setUsers(res.data.docs || res.data || []);
       } catch {
         setError("Failed to load users.");
@@ -42,20 +38,12 @@ export default function AdminNewDeviceForm({ onSuccess }: DeviceFormProps) {
     setIsLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      await axios.post(
-        `${apiUrl}/api/devices`,
-        {
-          deviceName,
-          deviceType,
-          serialNumber,
-          owner: owner ? Number(owner) : undefined,
-        },
-        {
-          headers: { Authorization: `JWT ${token}` },
-        }
-      );
+      await apiClient.post(`/api/devices`, {
+        deviceName,
+        deviceType,
+        serialNumber,
+        owner: owner ? Number(owner) : undefined,
+      });
       onSuccess();
     } catch {
       setError("Failed to register device. Please try again.");

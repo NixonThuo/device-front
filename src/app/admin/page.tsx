@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 import Header from "../components/Header";
 import { useRouter } from "next/navigation";
 import NewDeviceForm from "../components/NewDeviceForm";
@@ -39,12 +39,7 @@ export default function AdminDevicesPage() {
     setIsAdmin(true);
     const fetchDevices = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-        const res = await axios.get(`${apiUrl}/api/devices`, {
-          headers: { Authorization: `JWT ${token}` },
-        });
+        const res = await apiClient.get(`/api/devices`);
         setDevices(res.data.docs || res.data || []);
       } catch (err) {
         console.error(err);
@@ -88,31 +83,17 @@ export default function AdminDevicesPage() {
               try {
                 setExpiring(true);
                 setExpireMsg("");
-                const token = localStorage.getItem("token");
-                if (!token) {
-                  setExpireMsg("Not authenticated. Please login as an admin.");
-                  setExpiring(false);
-                  return;
-                }
-                const apiUrl =
-                  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-                const res = await axios.post(
-                  `${apiUrl}/api/passes/expire-admin`,
-                  {},
-                  {
-                    headers: {
-                      Authorization: `JWT ${token}`,
-                      "Content-Type": "application/json",
-                    },
-                  }
+                const res = await apiClient.post(
+                  `/api/passes/expire-admin`,
+                  {}
                 );
                 setExpireMsg(res.data?.message || "Expire job completed.");
                 // reload to refresh device list / passes
                 window.location.reload();
-              } catch (e) {
+              } catch (e: any) {
                 console.error("Expire passes error:", e);
                 setExpireMsg(
-                  axios.isAxiosError(e) && e.response?.data
+                  e.response?.data
                     ? (e.response.data.message || JSON.stringify(e.response.data))
                     : "Failed to run expire job."
                 );

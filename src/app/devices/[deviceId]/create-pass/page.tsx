@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "../../../utils/apiClient";
 import PassList from "./PassList";
 import Header from "../../../components/Header";
 import { fetchDevice, DeviceDetails } from "../../../components/fetchDevice";
@@ -34,18 +34,12 @@ export default function CreatePassPage({
     setIsLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      await axios.post(
-        `${apiUrl}/api/passes`,
-        {
-          device: deviceIdInt,
-          startDate,
-          endDate,
-          status: "active",
-        },
-        { headers: { Authorization: `JWT ${token}` } }
-      );
+      await apiClient.post(`/api/passes`, {
+        device: deviceIdInt,
+        startDate,
+        endDate,
+        status: "active",
+      });
       setShowModal(false);
       window.location.href = `/devices/${deviceIdInt}/create-pass`;
     } catch {

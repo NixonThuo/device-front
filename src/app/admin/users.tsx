@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 import Header from "../components/Header";
 
 interface User {
@@ -21,12 +21,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-        const res = await axios.get(`${apiUrl}/api/users`, {
-          headers: { Authorization: `JWT ${token}` },
-        });
+        const res = await apiClient.get(`/api/users`);
         setUsers(res.data.docs || res.data || []);
       } catch {
         setUserError("Failed to load users.");

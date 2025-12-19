@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 interface NewDeviceFormProps {
   onSuccess: () => void;
@@ -32,31 +32,20 @@ export default function NewDeviceForm({ onSuccess }: NewDeviceFormProps) {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
       // Always use logged-in user as owner
       const userIdStr = localStorage.getItem("userId");
       const ownerId = userIdStr ? parseInt(userIdStr, 10) : undefined;
-      await axios.post(
-        `${apiUrl}/api/devices`,
-        {
-          deviceName,
-          deviceType,
-          serialNumber,
-          owner: ownerId,
-        },
-        {
-          headers: {
-            Authorization: `JWT ${token}`,
-          },
-        }
-      );
+      await apiClient.post(`/api/devices`, {
+        deviceName,
+        deviceType,
+        serialNumber,
+        owner: ownerId,
+      });
 
       onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      if (axios.isAxiosError(err) && err.response?.data?.message) {
+      if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
         setError("Failed to register device. Please try again.");

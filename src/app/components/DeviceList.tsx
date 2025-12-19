@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import apiClient from "../utils/apiClient";
 
 type Device = {
   id: string;
@@ -28,13 +28,7 @@ export default function DeviceList({ onAddDevice }: DeviceListProps) {
 
   const fetchDevices = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const res = await axios.get(`${apiUrl}/api/devices`, {
-        headers: {
-          Authorization: `JWT ${token}`,
-        },
-      });
+      const res = await apiClient.get(`/api/devices`);
       setDevices(res.data.docs || []);
     } catch (err) {
       console.error(err);
