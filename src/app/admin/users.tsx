@@ -108,26 +108,19 @@ export default function AdminUsersPage() {
                   setUserLoading(true);
                   setUserError("");
                   try {
-                    const token = localStorage.getItem("token");
-                    const apiUrl =
-                      process.env.NEXT_PUBLIC_API_URL ||
-                      "http://localhost:3000";
-                    await axios.post(
-                      `${apiUrl}/api/users`,
+                    await apiClient.post(
+                      `/api/users`,
                       {
                         email: newUserEmail,
                         password: Math.random().toString(36).slice(-8), // random password
                         role: newUserRole,
-                      },
-                      { headers: { Authorization: `JWT ${token}` } }
+                      }
                     );
                     setShowUserModal(false);
                     setNewUserEmail("");
                     setNewUserRole("employee");
                     // Refresh users
-                    const res = await axios.get(`${apiUrl}/api/users`, {
-                      headers: { Authorization: `JWT ${token}` },
-                    });
+                    const res = await apiClient.get(`/api/users`);
                     setUsers(res.data.docs || res.data || []);
                   } catch {
                     setUserError(
